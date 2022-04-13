@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_04_13_150631) do
+ActiveRecord::Schema.define(version: 2022_04_13_163906) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -21,6 +21,19 @@ ActiveRecord::Schema.define(version: 2022_04_13_150631) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["user_id"], name: "index_bank_accounts_on_user_id"
+  end
+
+  create_table "trades", force: :cascade do |t|
+    t.integer "trade_type"
+    t.bigint "bank_account_id"
+    t.string "symbol"
+    t.integer "shares"
+    t.integer "price"
+    t.integer "state"
+    t.time "timestamp"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["bank_account_id"], name: "index_trades_on_bank_account_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -34,4 +47,5 @@ ActiveRecord::Schema.define(version: 2022_04_13_150631) do
   end
 
   add_foreign_key "bank_accounts", "users"
+  add_foreign_key "trades", "bank_accounts"
 end
