@@ -4,18 +4,14 @@ class AuthenticationController < ApplicationController
 
   def login
     @user = User.find_by_email(params[:email])
-    if @user&.authenticate(params[:password])
+    if @user.valid_password?(params[:password]) && @user.active == true
       token = JsonWebToken.encode(user_id: @user.id)
       time = Time.now + 30.minutes.to_i
       render json: { token: token, exp: time.strftime("%m-%d-%Y %H:%M"),
                      name: @user.name }, status: :ok
     else
-      render json: { error: 'unauthorized' }, status: :unauthorized
+      render json: { error: 'Unauthorized' }, status: :unauthorized
     end
-  end
-
-  def test_expired_token
-
   end
 
   private

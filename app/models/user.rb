@@ -1,5 +1,9 @@
 class User < ApplicationRecord
-  has_secure_password
+  devise(
+    :database_authenticatable,
+    :recoverable,
+    :registerable,
+  )
   validates :email, presence: true, uniqueness: true
   validates :password, presence: true, format: { with: /(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}/ }
   validates :name, presence: true

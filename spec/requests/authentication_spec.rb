@@ -10,7 +10,7 @@ RSpec.describe "Authentications", type: :request do
       expect(JSON.parse(response.body)['token']).not_to be_nil
     end
 
-    it "it should expire a token after 30 minutes" do
+    it "should expire a token after 30 minutes" do
       user = User.create!(email: 'test@email.com', password: '123##QQdsadsadasdsa', name: 'test', surname: 'test')
       post '/auth/login', params: {email: user.email, password: user.password}
       expect(response.status).to eq(200)
@@ -21,6 +21,13 @@ RSpec.describe "Authentications", type: :request do
       rescue => e
         expect(e.message).to eq("Signature has expired")
       end
+    end
+
+    it "should not allow active user to log in" do
+      user = User.create!(email: 'test@email.com', password: '123##QQdsadsadasdsa', name: 'test', surname: 'test', active: false)
+      post '/auth/login', params: {email: user.email, password: user.password}
+      expect(response.status).to eq(401)
+      expect(JSON.parse(response.body)['error']).to eq('Unauthorized')
     end
   end
 end
