@@ -1,3 +1,9 @@
 Rails.application.routes.draw do
-  # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
+  devise_for :users, controllers: {
+    passwords:  'users/passwords',
+    registrations:  'users/registrations',
+  }
+  post '/auth/login', to: 'authentication#login'
+  post '/auth/test-expired-token', to: 'authentication#test_expired_token'
+
 end
