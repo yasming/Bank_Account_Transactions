@@ -8,8 +8,13 @@ class User < ApplicationRecord
   validates :password, presence: true, format: { with: /(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}/ }
   validates :name, presence: true
   validates :surname, presence: true
-  has_many :bank_accounts
   after_create :create_new_bank_account
+  has_many :bank_accounts
+
+  def filter_bank_accounts_by_id(bank_account_id)
+    return self.bank_accounts if bank_account_id.nil?
+    self.bank_accounts.where(id: bank_account_id)
+  end
 
   private
 
