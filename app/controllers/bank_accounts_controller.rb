@@ -11,6 +11,20 @@ class BankAccountsController < ApplicationController
     render json: {bank_accounts: bank_accounts}
   end
 
+  def show
+    begin
+      bank_account = BankAccount.find(params[:id])
+      bank_account_formatted ={
+        'id' => bank_account.id,
+        'amount' => bank_account.amount,
+        'trades' => bank_account.get_trades_filtered(params)
+      }
+      render json: {bank_account: bank_account_formatted}
+    rescue => e
+      render json: {errors: e.message}, status: :not_found
+    end
+  end
+
   def create
     begin
       BankAccount.create!(amount: bank_accounts_params[:amount], user: current_user)

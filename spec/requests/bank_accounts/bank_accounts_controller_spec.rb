@@ -24,7 +24,7 @@ RSpec.describe "BankAccounts", type: :request do
     it "should be able to return all bank accounts form the user" do
       get '/bank_accounts',  headers: { Authorization:  @token}
       expect(response.status).to eq(200)
-      expect(JSON.parse(response.body)['bank_accounts']).to eq(get_bank_accounts_endpoint_structure)
+      expect(JSON.parse(response.body)['bank_accounts']).to eq(get_bank_accounts_endpoint_structure(@bank_accounts))
       expect(JSON.parse(response.body)['bank_accounts'].count).to eq(2)
     end
 
@@ -63,13 +63,71 @@ RSpec.describe "BankAccounts", type: :request do
     end
   end
 
+  describe "show" do
+    after(:context) { DatabaseCleaner.strategy = :truncation; DatabaseCleaner.clean }
+
+    before(:all) do
+      @user = User.create!(email: 'test@email.com', password: '123##QQdsadsadasdsa', name: 'test', surname: 'test')
+      @bank_account = BankAccount.create(user: @user, amount: 12)
+      @trade = Trade.create(trade_type: 1, bank_account: @bank_account, symbol: 'APPL', shares: 1, price: 1, state: 0, timestamp: 123)
+      post '/auth/login', params: {email: @user.email, password: @user.password}
+      @token = JSON.parse(response.body)['token']
+    end
+
+    it "should show bank account" do
+      get "/bank_accounts/#{@bank_account.id.to_s}", headers: { Authorization:  @token}
+      expect(response.status).to eq(200)
+      expect(JSON.parse(response.body)['bank_account']).to eq(get_bank_account_endpoint_structure(@bank_account))
+    end
+
+    it "should return error when trying to access not existing bank account" do
+      get "/bank_accounts/0", headers: { Authorization:  @token}
+      expect(response.status).to eq(404)
+      expect(JSON.parse(response.body)['errors']).to eq("Couldn't find BankAccount with 'id'=0")
+    end
+
+    it "should filter by type" do
+      get "/bank_accounts/#{@bank_account.id.to_s}?type=2", headers: { Authorization:  @token}
+      expect(response.status).to eq(200)
+      expect(JSON.parse(response.body)['bank_account']['trades'].count).to eq(0)
+    end
+
+    it "should filter by state" do
+      get "/bank_accounts/#{@bank_account.id.to_s}?state=3", headers: { Authorization:  @token}
+      expect(response.status).to eq(200)
+      expect(JSON.parse(response.body)['bank_account']['trades'].count).to eq(0)
+    end
+
+    it "should filter by number" do
+      get "/bank_accounts/#{@bank_account.id.to_s}?number=0", headers: { Authorization:  @token}
+      expect(response.status).to eq(200)
+      expect(JSON.parse(response.body)['bank_account']['trades'].count).to eq(0)
+    end
+
+    it "should filter by type, state and number" do
+      Trade.create(trade_type: 0, bank_account: @bank_account, symbol: 'APPL', shares: 1, price: 1, state: 0, timestamp: 123)
+      get "/bank_accounts/#{@bank_account.id.to_s}?type=1&state=0&number=#{@trade.id}", headers: { Authorization:  @token}
+      expect(response.status).to eq(200)
+      expect(JSON.parse(response.body)['bank_account']['trades'].count).to eq(1)
+    end
+  end
+
   private
-  def get_bank_accounts_endpoint_structure
-    @bank_accounts.map do |account|
+
+  def get_bank_accounts_endpoint_structure(bank_accounts)
+    bank_accounts.map do |account|
       {
         "id"     => account.id,
         "amount" => account.amount
       }
     end
+  end
+
+  def get_bank_account_endpoint_structure(bank_account)
+    {
+      'id'     => bank_account.id,
+      'amount' => bank_account.amount,
+      'trades' => bank_account.trades.as_json
+    }
   end
 end
