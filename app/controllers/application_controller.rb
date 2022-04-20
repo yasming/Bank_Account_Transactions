@@ -1,10 +1,6 @@
 class ApplicationController < ActionController::API
   before_action :configure_permitted_parameters, if: :devise_controller?
 
-  def not_found
-    render json: { error: 'not_found' }
-  end
-
   def authorize_request
     header = request.headers['Authorization']
     header = header.split(' ').last if header
@@ -16,6 +12,10 @@ class ApplicationController < ActionController::API
     rescue JWT::DecodeError => e
       render json: { errors: e.message }, status: :unauthorized
     end
+  end
+
+  def not_found
+    render json: { error: 'not_found' }
   end
 
   protected
