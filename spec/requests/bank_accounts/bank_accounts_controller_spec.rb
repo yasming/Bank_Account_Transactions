@@ -69,7 +69,7 @@ RSpec.describe "BankAccounts", type: :request do
     before(:all) do
       @user = User.create!(email: 'test@email.com', password: '123##QQdsadsadasdsa', name: 'test', surname: 'test')
       @bank_account = BankAccount.create(user: @user, amount: 12)
-      @trade = Trade.create(trade_type: 1, bank_account: @bank_account, symbol: 'APPL', shares: 1, price: 1, state: 0, timestamp: 123)
+      @trade = Trade.create!(trade_type: 1, bank_account: @bank_account, symbol: 'APPL', shares: 1, price: 1, state: 0, timestamp: Time.now)
       post '/auth/login', params: {email: @user.email, password: @user.password}
       @token = JSON.parse(response.body)['token']
     end
@@ -105,7 +105,7 @@ RSpec.describe "BankAccounts", type: :request do
     end
 
     it "should filter by type, state and number" do
-      Trade.create(trade_type: 0, bank_account: @bank_account, symbol: 'APPL', shares: 1, price: 1, state: 0, timestamp: 123)
+      Trade.create!(trade_type: 0, bank_account: @bank_account, symbol: 'APPL', shares: 1, price: 1, state: 0, timestamp: Time.now)
       get "/bank_accounts/#{@bank_account.id.to_s}?type=1&state=0&number=#{@trade.id}", headers: { Authorization:  @token}
       expect(response.status).to eq(200)
       expect(JSON.parse(response.body)['bank_account']['trades'].count).to eq(1)

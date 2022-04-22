@@ -79,6 +79,7 @@ GEM
       xpath (~> 3.2)
     childprocess (4.1.0)
     concurrent-ruby (1.1.10)
+    connection_pool (2.2.5)
     crass (1.0.6)
     database_cleaner (2.0.1)
       database_cleaner-active_record (~> 2.0.0)
@@ -169,6 +170,7 @@ GEM
     rb-fsevent (0.11.1)
     rb-inotify (0.10.1)
       ffi (~> 1.0)
+    redis (4.6.0)
     regexp_parser (2.3.0)
     responders (3.0.1)
       actionpack (>= 5.0)
@@ -195,6 +197,8 @@ GEM
       rspec-mocks (~> 3.10)
       rspec-support (~> 3.10)
     rspec-support (3.11.0)
+    ruby-ray (0.4.1)
+      activesupport (>= 4.2)
     rubyzip (2.3.2)
     sass-rails (6.0.0)
       sassc-rails (~> 2.1, >= 2.1.1)
@@ -211,6 +215,10 @@ GEM
       rexml (~> 3.2, >= 3.2.5)
       rubyzip (>= 1.2.2)
     semantic_range (3.0.0)
+    sidekiq (6.4.2)
+      connection_pool (>= 2.2.2)
+      rack (~> 2.0)
+      redis (>= 4.2.0)
     spring (4.0.0)
     sprockets (4.0.3)
       concurrent-ruby (~> 1.0)
@@ -270,8 +278,10 @@ DEPENDENCIES
   rails (~> 6.1.4, >= 6.1.4.7)
   rspec (~> 3.5)
   rspec-rails (>= 3.4.2)
+  ruby-ray
   sass-rails (>= 6)
   selenium-webdriver
+  sidekiq
   spring
   sqlite3 (~> 1.4)
   turbolinks (~> 5)

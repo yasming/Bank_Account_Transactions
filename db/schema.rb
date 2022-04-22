@@ -30,7 +30,7 @@ ActiveRecord::Schema.define(version: 2022_04_14_121758) do
     t.integer "shares"
     t.integer "price"
     t.integer "state"
-    t.time "timestamp"
+    t.datetime "timestamp"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["bank_account_id"], name: "index_trades_on_bank_account_id"

@@ -7,7 +7,7 @@ class CreateTrades < ActiveRecord::Migration[6.1]
       t.integer :shares
       t.integer :price
       t.integer :state
-      t.integer :timestamp
+      t.datetime :timestamp
       t.timestamps
     end
   end

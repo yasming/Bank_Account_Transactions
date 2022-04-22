@@ -1,4 +1,5 @@
 require 'rails_helper'
+require "sidekiq/testing"
 
 RSpec.describe "Trades", type: :request do
   describe "auth check" do
@@ -15,7 +16,7 @@ RSpec.describe "Trades", type: :request do
     before(:all) do
       @user        = User.create!(email: 'test@email.com', password: '123##QQdsadsadasdsa', name: 'test', surname: 'test')
       @bank_account = BankAccount.create(user: @user, amount: 12)
-      @trade       = Trade.create!(trade_type: 1, bank_account: @bank_account, symbol: 'APPL', shares: 1, price: 1, state: 1, timestamp: 123)
+      @trade       = Trade.create!(trade_type: 1, bank_account: @bank_account, symbol: 'APPL', shares: 1, price: 1, state: 1, timestamp: Time.now)
       post '/auth/login', params: {email: @user.email, password: @user.password}
       @token = JSON.parse(response.body)['token']
     end
@@ -44,7 +45,7 @@ RSpec.describe "Trades", type: :request do
       end
 
       it "should not allow to update a trade state if the trade state is different from pending" do
-        trade = Trade.create!(trade_type: 1, bank_account: @bank_account, symbol: 'APPL', shares: 1, price: 1, state: 0, timestamp: 123)
+        trade = Trade.create!(trade_type: 1, bank_account: @bank_account, symbol: 'APPL', shares: 1, price: 1, state: 0, timestamp: Time.now)
         get "/trades/#{trade.id.to_s}/edit", params: {state: 1}, headers: { Authorization:  @token}
         expect(response.status).to eq(422)
         expect(JSON.parse(response.body)['message']).to eq('Trade status cannot be updated!')
@@ -56,6 +57,36 @@ RSpec.describe "Trades", type: :request do
         expect(JSON.parse(response.body)['errors']).to eq("Couldn't find Trade with 'id'=0")
       end
     end
+
+    describe "create" do
+      it "should do not allow to create a trade with invalid records value" do
+        post "/trades", params: { trade: { shares: 0, trade_type: 3, bank_account_id: 1, symbol: "APPL", price: 123, state: 0, timestamp: Time.now }}, headers: { Authorization:  @token}
+        expect(response.status).to eq(422)
+        expect(JSON.parse(response.body)['errors']).to eq("'3' is not a valid trade_type")
+      end
+
+      it "should do not allow to create a trade with invalid time" do
+        post "/trades", params: { trade: { shares: 0, trade_type: 0, bank_account_id: 1, symbol: "APPL", price: 123, state: 1, timestamp: Time.now - 5.minutes }}, headers: { Authorization:  @token}
+        expect(response.status).to eq(422)
+        expect(JSON.parse(response.body)['errors']).to eq('Invalid time for trade!')
+      end
+
+      it "should create a trade now" do
+        post "/trades", params: { trade: { shares: 0, trade_type: 0, bank_account_id: @bank_account.id, symbol: "APPL", price: 1, state: 0, timestamp: Time.now }}, headers: { Authorization:  @token}
+        expect(response.status).to eq(200)
+        expect(JSON.parse(response.body)['message']).to eq('Trade done!')
+      end
+
+      it "should create a trade for later" do
+        post "/trades", params: { trade: { shares: 0, trade_type: 0, bank_account_id: @bank_account.id, symbol: "APPL", price: 123, state: 1, timestamp: Time.now }}, headers: { Authorization:  @token}
+        assert_enqueued_with(job: CreateTradeJob)
+        perform_enqueued_jobs
+        assert_performed_jobs 1
+        expect(response.status).to eq(200)
+        expect(JSON.parse(response.body)['message']).to eq('Trade created!')
+      end
+    end
+
   end
 
 end
