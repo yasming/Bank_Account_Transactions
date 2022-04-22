@@ -1,24 +1,19 @@
-# README
+# Bank Account Transactions
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+This project is an API that simulates bank accounts transactions, an user have multiple bank accounts and make a trade in any of his bank accounts, this trade can be for now or scheduled a time using SIDEKIQ, if the user doesn't have enough money to do the trade, the transaction will not be effectivate.
 
-Things you may want to cover:
+## Prerequisites
 
-* Ruby version
+```
+Redis
+```
 
-* System dependencies
+```
+Ruby >= 2.7.3
+```
 
-* Configuration
+## How to consume the project routes: 
 
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+```
+https://documenter.getpostman.com/view/20645609/UyrAFGn7
+```
